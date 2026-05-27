@@ -1,7 +1,7 @@
 from fastapi import FastAPI, File, HTTPException
 from typing import Annotated
 
-from ml_service import get_prediction
+from grpc_client import send_image_to_worker
 
 app = FastAPI(title="Distributed AI System Master Node")
 
@@ -33,10 +33,8 @@ async def health_check():
 @app.post("/infer")
 async def infer_endpoint(file: Annotated[bytes, File()]):
     """
-    Receives an image, validates it, and processes the inference.
-    Uses 'bytes' for fast memory loading, protected by a size limit.
+    Receives an image, validates it, and forwards it to the gRPC worker node.
     """
-    
     MAX_FILE_SIZE = 5 * 1024 * 1024 
     file_size = len(file)
     
@@ -49,7 +47,14 @@ async def infer_endpoint(file: Annotated[bytes, File()]):
             detail=f"File too large. Size: {file_size} bytes. Limit: 5MB."
         )
 
-    result_class, confidence = get_prediction(file)
+    try:
+        # This sends the bytes over the TCP network pipe to the worker!
+        result_class, confidence = send_image_to_worker(file)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to communicate with worker node: {str(e)}"
+        )
     
     return {
         "status": "success",
