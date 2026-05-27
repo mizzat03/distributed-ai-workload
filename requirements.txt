@@ -4,3 +4,5 @@ pillow==12.2.0
 fastapi==0.136.1
 python-multipart==0.0.29
 uvicorn==0.47.0
+grpcio == 1.80.0
+grpcio-tools == 1.80.0

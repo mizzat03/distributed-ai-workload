@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package inference;
+
+// This defines the actual RPC call the master will make
+service InferenceService {
+    rpc Predict (InferenceRequest) returns (InferenceResponse);
+}
+
+// What the Master sends to the Worker
+message InferenceRequest {
+    bytes image_data = 1;
+}
+
+// What the Worker sends back to the Master
+message InferenceResponse {
+    string prediction = 1;
+    float confidence = 2;
+}
