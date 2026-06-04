@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # ==========================================================================
+  # MASTER NODE (FastAPI Web Server)
+  # ==========================================================================
+  master:
+    build:
+      context: .
+      dockerfile: Dockerfile.master
+    container_name: ai_master_node
+    ports:
+      - "8000:8000"  # Maps port 8000 on your laptop to port 8000 inside the container
+    environment:
+      - WORKER_ADDRESS=worker:50051
+      - ENV=development
+    depends_on:
+      - worker  # Ensures the worker infrastructure network boots up first
+
+  # ==========================================================================
+  # WORKER NODE (gRPC Inference Server)
+  # ==========================================================================
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    # We do NOT hardcode a 'container_name' here so that we can scale workers dynamically!
+    expose:
+      - "50051"  # Opens port 50051 privately inside the Docker network router
+    environment:
+      - ENV=developmentversion: '3.8'
+

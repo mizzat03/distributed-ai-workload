@@ -2,6 +2,8 @@ import grpc
 import sys
 import os
 
+DEFAULT_WORKER = os.getenv("WORKER_ADDRESS", "localhost:50051")
+
 # This path hack allows the worker node to find the proto folder 
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -12,7 +14,7 @@ sys.path.append(os.path.join(root_dir, 'proto'))
 from proto import inference_pb2
 from proto import inference_pb2_grpc
 
-def send_image_to_worker(image_bytes: bytes, worker_address: str = "localhost:50051") -> tuple:
+def send_image_to_worker(image_bytes: bytes, worker_address: str = DEFAULT_WORKER) -> tuple:
     """
     Acts as the client. Takes raw image bytes, sends them to the gRPC worker,
     and returns the prediction and confidence.
