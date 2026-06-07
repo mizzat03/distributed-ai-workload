@@ -1,63 +1,72 @@
 # Distributed AI Model Serving Framework
 
-A distributed image inference system built with Python, FastAPI, PyTorch, and gRPC.  
-This project explores how machine learning inference systems can be scaled across multiple worker nodes while introducing concepts from distributed systems, networking, backend engineering, and fault tolerance.
+A highly scalable, distributed image inference system built with Python, FastAPI, PyTorch, gRPC, and Docker.  
+This project demonstrates how resource-intensive machine learning workloads can be decoupled and scaled across multiple worker nodes, showcasing a modern microservice architecture designed for high throughput and fault tolerance.
 
 ---
 
 # Project Overview
 
-This project aims to simulate a simplified production-style distributed AI inference system.
+This system serves as a robust proof-of-concept for enterprise-grade AI model deployment. 
 
-Instead of running inference directly inside a single API server, a **master node** receives inference requests and delegates the work to dedicated **worker nodes** using gRPC.
+Instead of bottlenecking inference directly inside a single monolithic API server, a **master node** receives client requests and asynchronously delegates the computational heavy lifting to dedicated **worker nodes** via high-speed gRPC channels. 
 
-The project is designed primarily as a learning exercise to bridge:
-- Machine Learning Inference
-- Distributed Systems
-- Backend APIs
-- Service-to-Service Communication
-- Fault Tolerance
-- System Performance Measurement
+This architecture provides a scalable foundation that bridges:
+- High-Performance Machine Learning Inference
+- Scalable Distributed Systems
+- Asynchronous Backend APIs
+- Low-Latency Service-to-Service Communication
+- Containerization & Orchestration
+- Fault Tolerance & High Availability
 
 ---
 
-# Current Progress (Week 3)
+# Current Progress (Week 4)
 
 ## Completed
 
-### Week 1
+### Week 1: Core Inference
 - Local PyTorch image inference
 - Image preprocessing pipeline
 - Pretrained CNN model inference
 - Single image prediction
 
-### Week 2
+### Week 2: API Gateway
 - FastAPI inference API
 - `POST /infer` endpoint
 - Multipart image uploads
 - JSON prediction responses
 
-### Week 3 (Current)
-- Learning gRPC + Protocol Buffers
+### Week 3: Microservice Communication
+- gRPC + Protocol Buffers integration
 - Separating master and worker architecture
-- Implementing gRPC communication
+- Implementing high-speed gRPC communication channels
 - Creating protobuf service definitions
+
+### Week 4: Containerization & Orchestration (Current)
+- Containerizing the architecture using Docker (`Dockerfile.master`, `Dockerfile.worker`)
+- Orchestrating the multi-container cluster using `docker-compose.yml`
+- Configuring internal Docker DNS and optimizing gRPC network routing
+- Managing Linux user permissions and persisting PyTorch model caches
+- Implementing `.dockerignore` for strict environment isolation
 
 ---
 
 # Current Architecture
 
 ```text
-Client
-   |
-   v
-FastAPI Master API
-   |
-   v
-gRPC Client
-   |
-   v
-gRPC Worker Server
-   |
-   v
-PyTorch Inference
+                                Client
+                                  |
+                                  v (HTTP POST /infer)
++-----------------------------------------------------------------+
+| Docker Compose Virtual Network                                  |
+|                                                                 |
+|   +-----------------------+          +-----------------------+  |
+|   | ai_master_node        |          | worker                |  |
+|   |                       |          |                       |  |
+|   | [FastAPI]             |  gRPC    | [gRPC Server]         |  |
+|   | Port 8000             |=======>  | Port 50051            |  |
+|   |                       |          | [PyTorch ResNet-18]   |  |
+|   +-----------------------+          +-----------------------+  |
+|                                                                 |
++-----------------------------------------------------------------+
