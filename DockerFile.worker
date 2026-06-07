@@ -29,6 +29,8 @@ RUN adduser \
 COPY ./requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN mkdir -p /app/.cache/torch && chown -R appuser:appuser /app/.cache
+
 # Switch to the non-privileged user to run the application.
 USER appuser
 
@@ -36,7 +38,7 @@ USER appuser
 # Copy source code in worker and proto folder
 COPY --chown=appuser:appuser ./worker ./worker
 COPY --chown=appuser:appuser ./proto ./proto
-
+COPY --chown=appuser:appuser ./data/labels ./data/labels
 
 # Expose the port that the application listens on.
 EXPOSE 50051

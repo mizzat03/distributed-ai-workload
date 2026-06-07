@@ -1,7 +1,7 @@
 from fastapi import FastAPI, File, HTTPException
 from typing import Annotated
 
-from grpc_client import send_image_to_worker
+from .grpc_client import send_image_to_worker
 
 app = FastAPI(title="Distributed AI System Master Node")
 

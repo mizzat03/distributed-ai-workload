@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   # ==========================================================================
@@ -7,10 +6,10 @@ services:
   master:
     build:
       context: .
-      dockerfile: Dockerfile.master
+      dockerfile: DockerFile.master
     container_name: ai_master_node
     ports:
-      - "8000:8000"  # Maps port 8000 on your laptop to port 8000 inside the container
+      - "8000:8000"  # Maps port 8000 on my laptop to port 8000 inside the container
     environment:
       - WORKER_ADDRESS=worker:50051
       - ENV=development
@@ -23,10 +22,10 @@ services:
   worker:
     build:
       context: .
-      dockerfile: Dockerfile.worker
+      dockerfile: DockerFile.worker
     # We do NOT hardcode a 'container_name' here so that we can scale workers dynamically!
     expose:
       - "50051"  # Opens port 50051 privately inside the Docker network router
     environment:
-      - ENV=developmentversion: '3.8'
+      - ENV=development
 

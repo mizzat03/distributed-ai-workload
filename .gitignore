@@ -2,7 +2,20 @@
 context.md
 
 # Image directories
-images/
+data/images
 
 # Python virtual environment
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
 venv/
+.venv/
+env/
+*.egg-info/
+
+# OS & IDE Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

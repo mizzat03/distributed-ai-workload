@@ -17,7 +17,7 @@ preprocess = transforms.Compose([
     ])
 
 """ Fetching the 1000 ImageNet class labels from a local file """
-with open("../data/labels/imagenet-labels.json", "r") as file:
+with open("/app/data/labels/imagenet-labels.json", "r") as file:
     labels = json.load(file)
     
 

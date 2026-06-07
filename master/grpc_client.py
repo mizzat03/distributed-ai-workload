@@ -14,6 +14,8 @@ sys.path.append(os.path.join(root_dir, 'proto'))
 from proto import inference_pb2
 from proto import inference_pb2_grpc
 
+
+
 def send_image_to_worker(image_bytes: bytes, worker_address: str = DEFAULT_WORKER) -> tuple:
     """
     Acts as the client. Takes raw image bytes, sends them to the gRPC worker,
