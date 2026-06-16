@@ -21,7 +21,7 @@ This architecture provides a scalable foundation that bridges:
 
 ---
 
-# Current Progress (Week 4)
+# Current Progress (Week 5)
 
 ## Completed
 
@@ -43,7 +43,7 @@ This architecture provides a scalable foundation that bridges:
 - Implementing high-speed gRPC communication channels
 - Creating protobuf service definitions
 
-### Week 4: Containerization & Orchestration (Current)
+### Week 4: Containerization & Orchestration 
 - Containerizing the architecture using Docker (`Dockerfile.master`, `Dockerfile.worker`)
 - Orchestrating the multi-container cluster using `docker-compose.yml`
 - Configuring internal Docker DNS and optimizing gRPC network routing
@@ -51,35 +51,12 @@ This architecture provides a scalable foundation that bridges:
 - Implementing `.dockerignore` for strict environment isolation
 
 
-### Week 5: Multiple Workers & Batch Splitting (Current)Client
-                                  |
-                                  v (HTTP POST /infer batch)
-+--------------------------------------------------------------------------+
-| Docker Compose Virtual Network                                           |
-|                                                                          |
-|   +-----------------------+               +-----------------------+      |
-|   | ai_master_node        |               | worker-1              |      |
-|   |                       |  gRPC         | [gRPC Server]         |      |
-|   | [FastAPI Scheduler]   |=============> | [PyTorch ResNet-18]   |      |
-|   | Port 8000             |               +-----------------------+      |
-|   |                       |                                              |
-|   | [Async Event Loop]    |  gRPC         +-----------------------+      |
-|   |                       |=============> | worker-2              |      |
-|   | [Result Aggregator]   |               | [gRPC Server]         |      |
-|   |                       |               | [PyTorch ResNet-18]   |      |
-|   +-----------------------+               +-----------------------+      |
-|             ||                            |                              |
-|             ||               gRPC         +-----------------------+      |
-|             +===========================> | worker-n              |      |
-|                                           | [gRPC Server]         |      |
-|                                           | [PyTorch ResNet-18]   |      |
-|                                           +-----------------------+      |
-|                                                                          |
-+--------------------------------------------------------------------------+
+### Week 5: Multiple Workers & Batch Splitting (Current)
 - Scaled the architecture to support multiple worker node containers within the Docker Compose network.
 - Implemented a batch-splitting scheduler to evenly distribute image payloads across available workers.
 - Utilized Python `asyncio (asyncio.gather)` to fire master-to-worker gRPC network requests concurrently, significantly reducing batch inference latency.
 - Created a result aggregator to collect asynchronous worker responses and reconstruct them into the original ordered format for the client.
+
 ---
 
 # Current Architecture
@@ -110,3 +87,5 @@ This architecture provides a scalable foundation that bridges:
 |                                           +-----------------------+      |
 |                                                                          |
 +--------------------------------------------------------------------------+
+
+```

@@ -10,7 +10,7 @@ app = FastAPI(title="Distributed AI System Master Node")
 
 @app.get("/")
 async def root_path():
-    """Serves a simple HTML UI to bypass the Swagger bug."""
+    """Serves a simple HTML UI."""
     content = """
     <body>
     <h2>Distributed AI - Batch Upload Test</h2>
@@ -27,8 +27,6 @@ async def root_path():
 async def health_check():
     """
     Health check endpoint. 
-    In future weeks, you will update this to return the number 
-    of connected worker nodes and their CPU/GPU loads.
     """
     return {
         "status": "healthy",
