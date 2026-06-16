@@ -11,21 +11,43 @@ services:
     ports:
       - "8000:8000"  # Maps port 8000 on my laptop to port 8000 inside the container
     environment:
-      - WORKER_ADDRESS=worker:50051
+      - WORKER_ADDRESSES=worker-1:50051,worker-2:50051,worker-3:50051
       - ENV=development
     depends_on:
-      - worker  # Ensures the worker infrastructure network boots up first
-
+      - worker-1  # Ensures the worker infrastructure network boots up first
+      - worker-2
+      - worker-3
+      
   # ==========================================================================
   # WORKER NODE (gRPC Inference Server)
   # ==========================================================================
-  worker:
+  worker-1:
     build:
       context: .
       dockerfile: DockerFile.worker
-    # We do NOT hardcode a 'container_name' here so that we can scale workers dynamically!
+    container_name: ai_worker_1
     expose:
       - "50051"  # Opens port 50051 privately inside the Docker network router
     environment:
       - ENV=development
 
+  worker-2:
+    build:
+      context: .
+      dockerfile: DockerFile.worker
+    container_name: ai_worker_2
+    expose:
+      - "50051"
+    environment:
+      - ENV=development
+
+  worker-3:
+    build:
+      context: .
+      dockerfile: DockerFile.worker
+    container_name: ai_worker_3
+    expose:
+      - "50051"
+    environment:
+      - ENV=development
+ 

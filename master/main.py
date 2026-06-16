@@ -1,19 +1,26 @@
-from fastapi import FastAPI, File, HTTPException
-from typing import Annotated
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import HTMLResponse
+from typing import List
 
-from .grpc_client import send_image_to_worker
+from .scheduler import process_batch
+
 
 app = FastAPI(title="Distributed AI System Master Node")
 
 
 @app.get("/")
 async def root_path():
-    """Simple welcome route to verify the server is reachable."""
-    return {
-        "service": "Master Node API",
-        "status": "online",
-        "endpoints": ["/health", "/infer"]
-    }
+    """Serves a simple HTML UI to bypass the Swagger bug."""
+    content = """
+    <body>
+    <h2>Distributed AI - Batch Upload Test</h2>
+    <form action="/infer" enctype="multipart/form-data" method="post">
+    <input name="files" type="file" multiple>
+    <input type="submit">
+    </form>
+    </body>
+    """
+    return HTMLResponse(content=content)
 
 
 @app.get("/health")
@@ -31,34 +38,30 @@ async def health_check():
 
 
 @app.post("/infer")
-async def infer_endpoint(file: Annotated[bytes, File()]):
+async def infer_endpoint(files: List[UploadFile] = File(...)):
     """
     Receives an image, validates it, and forwards it to the gRPC worker node.
     """
     MAX_FILE_SIZE = 5 * 1024 * 1024 
-    file_size = len(file)
+    max_file_size = max([f.size for f in files])
     
-    if file_size == 0:
+    if max_file_size == 0:
         raise HTTPException(status_code=400, detail="Empty file uploaded.")
         
-    if file_size > MAX_FILE_SIZE:
+    if max_file_size > MAX_FILE_SIZE:
         raise HTTPException(
             status_code=413, 
-            detail=f"File too large. Size: {file_size} bytes. Limit: 5MB."
+            detail=f"One of the uploaded file is too large. Size: {max_file_size} bytes. Limit: 5MB."
         )
 
     try:
-        # This sends the bytes over the TCP network pipe to the worker!
-        result_class, confidence = send_image_to_worker(file)
+        # Our scheduling logic for batch split is here
+        final_sorted_results = await process_batch(files)
+
     except Exception as e:
         raise HTTPException(
             status_code=500, 
             detail=f"Failed to communicate with worker node: {str(e)}"
         )
     
-    return {
-        "status": "success",
-        "file_size_bytes": file_size,
-        "prediction": result_class, 
-        "confidence": confidence
-    }
+    return final_sorted_results

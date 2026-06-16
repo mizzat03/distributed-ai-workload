@@ -16,7 +16,7 @@ from proto import inference_pb2_grpc
 
 
 
-def send_image_to_worker(image_bytes: bytes, worker_address: str = DEFAULT_WORKER) -> tuple:
+async def send_image_to_worker(image_bytes: bytes,image_id: int, worker_address: str = DEFAULT_WORKER) -> tuple:
     """
     Acts as the client. Takes raw image bytes, sends them to the gRPC worker,
     and returns the prediction and confidence.
@@ -24,7 +24,7 @@ def send_image_to_worker(image_bytes: bytes, worker_address: str = DEFAULT_WORKE
     
     # 1. Open the network connection (The Channel)
     # Using 'insecure_channel' because we aren't using SSL/HTTPS certificates locally
-    with grpc.insecure_channel(worker_address) as channel:
+    async with grpc.aio.insecure_channel(worker_address) as channel:
         
         # 2. Create the Stub (The Translator)
         stub = inference_pb2_grpc.InferenceServiceStub(channel)
@@ -35,10 +35,10 @@ def send_image_to_worker(image_bytes: bytes, worker_address: str = DEFAULT_WORKE
         try:
             # 4. Make the actual RPC call! 
             # We set a timeout of 10 seconds so the master doesn't freeze forever if a worker dies
-            response = stub.Predict(request, timeout=10.0)
+            response = await stub.Predict(request, timeout=10.0)
             
             # Return exactly what FastAPI expects
-            return response.prediction, response.confidence
+            return response.prediction, response.confidence, image_id
             
         except grpc.RpcError as e:
             # If the worker crashes or the network drops, gRPC throws an RpcError
