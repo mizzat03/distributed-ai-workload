@@ -11,7 +11,7 @@ services:
     ports:
       - "8000:8000"  # Maps port 8000 on my laptop to port 8000 inside the container
     environment:
-      - WORKER_ADDRESSES=worker-1:50051,worker-2:50051,worker-3:50051
+      - WORKER_ADDRESSES=worker-1:50051 ,worker-2:50051 ,worker-3:50051
       - ENV=development
     depends_on:
       - worker-1  # Ensures the worker infrastructure network boots up first
