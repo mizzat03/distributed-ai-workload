@@ -25,11 +25,19 @@ RUN adduser \
     appuser
     
 
-# Copy the dependencies and install.
-COPY ./requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install uv
+RUN pip install uv
+
+# Copy the lock and configuration files
+COPY pyproject.toml uv.lock ./
+
+# Sync the environment using uv
+RUN uv sync --frozen --no-dev
+ENV PATH="/app/.venv/bin:$PATH"
 
 RUN mkdir -p /app/.cache/torch && chown -R appuser:appuser /app/.cache
+
+
 
 # Switch to the non-privileged user to run the application.
 USER appuser

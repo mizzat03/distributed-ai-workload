@@ -1,0 +1,94 @@
+[1mdiff --git a/DockerFile.master b/DockerFile.master[m
+[1mindex a7f4c66..655a763 100644[m
+[1m--- a/DockerFile.master[m
+[1m+++ b/DockerFile.master[m
+[36m@@ -23,9 +23,15 @@[m [mRUN adduser \[m
+     appuser[m
+     [m
+ [m
+[31m-# Copy the dependencies and install.[m
+[31m-COPY ./requirements.txt .[m
+[31m-RUN pip install --no-cache-dir -r requirements.txt[m
+[32m+[m[32m# Install uv[m
+[32m+[m[32mRUN pip install uv[m
+[32m+[m
+[32m+[m[32m# Copy the lock and configuration files[m
+[32m+[m[32mCOPY pyproject.toml uv.lock ./[m
+[32m+[m
+[32m+[m[32m# Sync the environment using uv[m
+[32m+[m[32mRUN uv sync --frozen --no-dev[m
+[32m+[m[32mENV PATH="/app/.venv/bin:$PATH"[m
+ [m
+ # Switch to the non-privileged user to run the application.[m
+ USER appuser[m
+[1mdiff --git a/DockerFile.worker b/DockerFile.worker[m
+[1mindex 76ab7c5..5946533 100644[m
+[1m--- a/DockerFile.worker[m
+[1m+++ b/DockerFile.worker[m
+[36m@@ -25,12 +25,20 @@[m [mRUN adduser \[m
+     appuser[m
+     [m
+ [m
+[31m-# Copy the dependencies and install.[m
+[31m-COPY ./requirements.txt .[m
+[31m-RUN pip install --no-cache-dir -r requirements.txt[m
+[32m+[m[32m# Install uv[m
+[32m+[m[32mRUN pip install uv[m
+[32m+[m
+[32m+[m[32m# Copy the lock and configuration files[m
+[32m+[m[32mCOPY pyproject.toml uv.lock ./[m
+[32m+[m
+[32m+[m[32m# Sync the environment using uv[m
+[32m+[m[32mRUN uv sync --frozen --no-dev[m
+[32m+[m[32mENV PATH="/app/.venv/bin:$PATH"[m
+ [m
+ RUN mkdir -p /app/.cache/torch && chown -R appuser:appuser /app/.cache[m
+ [m
+[32m+[m
+[32m+[m
+ # Switch to the non-privileged user to run the application.[m
+ USER appuser[m
+ [m
+[1mdiff --git a/requirements.txt b/requirements.txt[m
+[1mdeleted file mode 100644[m
+[1mindex 604e107..0000000[m
+Binary files a/requirements.txt and /dev/null differ
+[1mdiff --git a/scripts/locust.py b/scripts/locust.py[m
+[1mindex e69de29..c54c170 100644[m
+[1m--- a/scripts/locust.py[m
+[1m+++ b/scripts/locust.py[m
+[36m@@ -0,0 +1,33 @@[m
+[32m+[m[32mimport os[m
+[32m+[m[32mfrom locust import HttpUser, task, between[m
+[32m+[m
+[32m+[m[32mclass PhotoUploadUser(HttpUser):[m
+[32m+[m[32m    wait_time = between(1, 5)[m
+[32m+[m[32m    host = "http://localhost:8000"[m
+[32m+[m[32m    IMAGE_PATH = "../data/images/elephant.jpg"[m[41m [m
+[32m+[m
+[32m+[m[32m    def on_start(self):[m
+[32m+[m[32m        """Executed when a user starts the test.Checks if test image exists"""[m
+[32m+[m[32m        if not os.path.exists(self.IMAGE_PATH):[m
+[32m+[m[32m            print(f"Error: {self.IMAGE_PATH} not found in the directory.")[m
+[32m+[m[32m            self.environment.runner.quit()[m
+[32m+[m
+[32m+[m[32m    @task[m
+[32m+[m[32m    def upload_photo(self):[m
+[32m+[m[32m        """Task to upload a photo to the server."""[m
+[32m+[m[41m        [m
+[32m+[m[32m        with open(self.IMAGE_PATH, "rb") as image_file:[m
+[32m+[m[32m            files = {[m
+[32m+[m[32m                "files": (os.path.basename(self.IMAGE_PATH), image_file, "image/jpeg")[m
+[32m+[m[32m            }[m
+[32m+[m[41m            [m
+[32m+[m[32m            # Perform the POST request[m
+[32m+[m[32m            with self.client.post([m
+[32m+[m[32m                "/infer",[m[41m [m
+[32m+[m[32m                files=files,[m[41m [m
+[32m+[m[32m                catch_response=True[m
+[32m+[m[32m            ) as response:[m
+[32m+[m[32m                if response.status_code == 200:[m
+[32m+[m[32m                    response.success()[m
+[32m+[m[32m                else:[m
+[32m+[m[32m                    response.failure(f"Failed with status {response.status_code}")[m
+\ No newline at end of file[m
